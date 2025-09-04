@@ -416,18 +416,24 @@ export class IdeClient {
     });
     const undiciPromise = import('undici');
     return async (url: string | URL, init?: RequestInit): Promise<Response> => {
-      const { fetch: fetchFn } = await undiciPromise;
-      const fetchOptions: RequestInit & { dispatcher?: unknown } = {
-        ...init,
-        dispatcher: agent,
-      };
-      const options = fetchOptions as unknown as import('undici').RequestInit;
-      const response = await fetchFn(url, options);
-      return new Response(response.body as ReadableStream<unknown> | null, {
-        status: response.status,
-        statusText: response.statusText,
-        headers: response.headers,
-      });
+      logger.debug('Fetching', url.toString(), init);
+      try {
+        const { fetch: fetchFn } = await undiciPromise;
+        const fetchOptions: RequestInit & { dispatcher?: unknown } = {
+          ...init,
+          dispatcher: agent,
+        };
+        const options = fetchOptions as unknown as import('undici').RequestInit;
+        const response = await fetchFn(url, options);
+        return new Response(response.body as ReadableStream<unknown> | null, {
+          status: response.status,
+          statusText: response.statusText,
+          headers: Object.fromEntries(response.headers.entries()),
+        });
+      } catch (error) {
+        logger.error('Fetch failed', error);
+        throw error;
+      }
     };
   }
 

@@ -186,6 +186,7 @@ describe('subagent.ts', () => {
           promptConfig,
           defaultModelConfig,
           defaultRunConfig,
+          new AbortController(),
         );
         expect(scope).toBeInstanceOf(SubAgentScope);
       });
@@ -218,6 +219,7 @@ describe('subagent.ts', () => {
             promptConfig,
             defaultModelConfig,
             defaultRunConfig,
+            new AbortController(),
             options,
           ),
         ).rejects.toThrow(
@@ -247,6 +249,7 @@ describe('subagent.ts', () => {
           promptConfig,
           defaultModelConfig,
           defaultRunConfig,
+          new AbortController(),
           options,
         );
         expect(scope).toBeInstanceOf(SubAgentScope);
@@ -287,6 +290,7 @@ describe('subagent.ts', () => {
           promptConfig,
           defaultModelConfig,
           defaultRunConfig,
+          new AbortController(),
           options,
         );
 
@@ -326,6 +330,7 @@ describe('subagent.ts', () => {
           promptConfig,
           defaultModelConfig,
           defaultRunConfig,
+          new AbortController(),
         );
 
         await scope.runNonInteractive(context);
@@ -378,6 +383,7 @@ describe('subagent.ts', () => {
           promptConfig,
           defaultModelConfig,
           defaultRunConfig,
+          new AbortController(),
           { outputConfig },
         );
 
@@ -414,6 +420,7 @@ describe('subagent.ts', () => {
           promptConfig,
           defaultModelConfig,
           defaultRunConfig,
+          new AbortController(),
         );
 
         await scope.runNonInteractive(context);
@@ -448,6 +455,7 @@ describe('subagent.ts', () => {
           promptConfig,
           defaultModelConfig,
           defaultRunConfig,
+          new AbortController(),
         );
 
         // The error from templating causes the runNonInteractive to reject and the terminate_reason to be ERROR.
@@ -471,6 +479,7 @@ describe('subagent.ts', () => {
           promptConfig,
           defaultModelConfig,
           defaultRunConfig,
+          new AbortController(),
         );
 
         await expect(agent.runNonInteractive(context)).rejects.toThrow(
@@ -494,6 +503,7 @@ describe('subagent.ts', () => {
           promptConfig,
           defaultModelConfig,
           defaultRunConfig,
+          new AbortController(),
           // No ToolConfig, No OutputConfig
         );
 
@@ -537,6 +547,7 @@ describe('subagent.ts', () => {
           promptConfig,
           defaultModelConfig,
           defaultRunConfig,
+          new AbortController(),
           { outputConfig },
         );
 
@@ -596,6 +607,7 @@ describe('subagent.ts', () => {
           promptConfig,
           defaultModelConfig,
           defaultRunConfig,
+          new AbortController(),
           { toolConfig },
         );
 
@@ -651,6 +663,7 @@ describe('subagent.ts', () => {
           promptConfig,
           defaultModelConfig,
           defaultRunConfig,
+          new AbortController(),
           { toolConfig },
         );
 
@@ -697,6 +710,7 @@ describe('subagent.ts', () => {
           promptConfig,
           defaultModelConfig,
           defaultRunConfig,
+          new AbortController(),
           { outputConfig },
         );
 
@@ -757,6 +771,7 @@ describe('subagent.ts', () => {
           promptConfig,
           defaultModelConfig,
           runConfig,
+          new AbortController(),
         );
 
         await scope.runNonInteractive(new ContextState());
@@ -794,6 +809,7 @@ describe('subagent.ts', () => {
           promptConfig,
           defaultModelConfig,
           runConfig,
+          new AbortController(),
         );
 
         const runPromise = scope.runNonInteractive(new ContextState());
@@ -825,6 +841,7 @@ describe('subagent.ts', () => {
           promptConfig,
           defaultModelConfig,
           defaultRunConfig,
+          new AbortController(),
         );
 
         await expect(

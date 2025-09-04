@@ -20,3 +20,7 @@ export {
 export { getIdeTrust } from './src/utils/ide-trust.js';
 export { makeFakeConfig } from './src/test-utils/config.js';
 export * from './src/utils/pathReader.js';
+export * from './src/core/agentTracker.js';
+export * from './src/config/agents.js';
+export * from './src/core/notificationManager.js';
+export * from './src/core/subagent.js';

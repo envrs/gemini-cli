@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+import { setGlobalConfig } from './config/global.js';
 import React, { useState, useEffect } from 'react';
 import { render, Box, Text } from 'ink';
 import Spinner from 'ink-spinner';
@@ -220,6 +221,7 @@ export async function main() {
     sessionId,
     argv,
   );
+  setGlobalConfig(config);
 
   if (argv.sessionSummary) {
     registerCleanup(() => {

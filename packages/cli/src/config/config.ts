@@ -17,6 +17,7 @@ import type {
   MCPServerConfig,
 } from '@google/gemini-cli-core';
 import { extensionsCommand } from '../commands/extensions.js';
+import { agentsCommand } from '../commands/agents.js';
 import {
   Config,
   loadServerHierarchicalMemory,
@@ -309,6 +310,8 @@ export async function parseArguments(settings: Settings): Promise<CliArgs> {
     yargsInstance.command(extensionsCommand);
   }
 
+  yargsInstance.command(agentsCommand);
+
   yargsInstance
     .version(await getCliVersion()) // This will enable the --version flag based on package.json
     .alias('v', 'version')
@@ -324,7 +327,9 @@ export async function parseArguments(settings: Settings): Promise<CliArgs> {
   // and not return to main CLI logic
   if (
     result._.length > 0 &&
-    (result._[0] === 'mcp' || result._[0] === 'extensions')
+    (result._[0] === 'mcp' ||
+      result._[0] === 'extensions' ||
+      result._[0] === 'agents')
   ) {
     // MCP commands handle their own execution and process exit
     process.exit(0);

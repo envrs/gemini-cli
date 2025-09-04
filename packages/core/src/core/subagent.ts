@@ -22,6 +22,12 @@ import type {
 import { Type } from '@google/genai';
 import { GeminiChat, StreamEventType } from './geminiChat.js';
 
+export interface Notification {
+  id: string;
+  prompt: string;
+  options: string[];
+}
+
 /**
  * @fileoverview Defines the configuration interfaces for a subagent.
  *
@@ -152,6 +158,7 @@ export interface SubAgentOptions {
   toolConfig?: ToolConfig;
   outputConfig?: OutputConfig;
   onMessage?: (message: string) => void;
+  onNotification?: (notification: Notification) => Promise<string>;
 }
 
 /**
@@ -246,7 +253,12 @@ export class SubAgentScope {
   private readonly toolConfig?: ToolConfig;
   private readonly outputConfig?: OutputConfig;
   private readonly onMessage?: (message: string) => void;
+  private readonly onNotification?: (
+    notification: Notification,
+  ) => Promise<string>;
   private readonly toolRegistry: ToolRegistry;
+
+  private readonly abortController: AbortController;
 
   /**
    * Constructs a new SubAgentScope instance.
@@ -264,6 +276,7 @@ export class SubAgentScope {
     private readonly modelConfig: ModelConfig,
     private readonly runConfig: RunConfig,
     toolRegistry: ToolRegistry,
+    abortController: AbortController,
     options: SubAgentOptions = {},
   ) {
     const randomPart = Math.random().toString(36).slice(2, 8);
@@ -271,7 +284,9 @@ export class SubAgentScope {
     this.toolConfig = options.toolConfig;
     this.outputConfig = options.outputConfig;
     this.onMessage = options.onMessage;
+    this.onNotification = options.onNotification;
     this.toolRegistry = toolRegistry;
+    this.abortController = abortController;
   }
 
   /**
@@ -293,6 +308,7 @@ export class SubAgentScope {
     promptConfig: PromptConfig,
     modelConfig: ModelConfig,
     runConfig: RunConfig,
+    abortController: AbortController,
     options: SubAgentOptions = {},
   ): Promise<SubAgentScope> {
     const subagentToolRegistry = new ToolRegistry(runtimeContext);
@@ -354,6 +370,7 @@ export class SubAgentScope {
       modelConfig,
       runConfig,
       subagentToolRegistry,
+      abortController,
       options,
     );
   }
@@ -375,8 +392,6 @@ export class SubAgentScope {
         this.output.terminate_reason = SubagentTerminateMode.ERROR;
         return;
       }
-
-      const abortController = new AbortController();
 
       // Prepare the list of tools available to the subagent.
       const toolsList: FunctionDeclaration[] = [];
@@ -425,7 +440,7 @@ export class SubAgentScope {
         const messageParams = {
           message: currentMessages[0]?.parts || [],
           config: {
-            abortSignal: abortController.signal,
+            abortSignal: this.abortController.signal,
             tools: [{ functionDeclarations: toolsList }],
           },
         };
@@ -438,7 +453,7 @@ export class SubAgentScope {
         const functionCalls: FunctionCall[] = [];
         let textResponse = '';
         for await (const resp of responseStream) {
-          if (abortController.signal.aborted) return;
+          if (this.abortController.signal.aborted) return;
           if (resp.type === StreamEventType.CHUNK && resp.value.functionCalls) {
             functionCalls.push(...resp.value.functionCalls);
           }
@@ -460,7 +475,7 @@ export class SubAgentScope {
         if (functionCalls.length > 0) {
           currentMessages = await this.processFunctionCalls(
             functionCalls,
-            abortController,
+            this.abortController,
             promptId,
           );
         }
@@ -736,5 +751,16 @@ Important Rules:
  * Once you believe all goals have been met and all required outputs have been emitted, stop calling tools.`;
 
     return finalPrompt;
+  }
+
+  async requestInput(prompt: string, options: string[]): Promise<string> {
+    if (!this.onNotification) {
+      throw new Error('onNotification callback not provided');
+    }
+
+    const id = `${this.subagentId}-${Date.now()}`;
+    const notification: Notification = { id, prompt, options };
+
+    return this.onNotification(notification);
   }
 }
