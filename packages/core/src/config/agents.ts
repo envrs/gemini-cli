@@ -11,10 +11,23 @@ import * as os from 'node:os';
 const GEMINI_DIR = '.gemini';
 const AGENTS_CONFIG_FILENAME = 'agents.json';
 
-export interface Agent {
+export class Agent {
   name: string;
   model: string;
   temperature: number;
+  history: AgentHistory[];
+
+  constructor(name: string, model: string, temperature: number) {
+    this.name = name;
+    this.model = model;
+    this.temperature = temperature;
+    this.history = [];
+  }
+}
+
+export interface AgentHistory {
+  message: string;
+  timestamp: number;
 }
 
 function getAgentsConfigPath(): string {

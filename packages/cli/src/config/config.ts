@@ -43,6 +43,9 @@ import { appEvents } from '../utils/events.js';
 
 import { isWorkspaceTrusted } from './trustedFolders.js';
 
+import { codeCommand } from '../commands/code.js';
+import { generateCommand } from '../commands/generate.js';
+
 // Simple console logger for now - replace with actual logger if available
 const logger = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -91,7 +94,7 @@ export async function parseArguments(settings: Settings): Promise<CliArgs> {
     .usage(
       'Usage: gemini [options] [command]\n\nGemini CLI - Launch an interactive CLI, use -p/--prompt for non-interactive mode',
     )
-    .command('$0 [promptWords...]', 'Launch Gemini CLI', (yargsInstance) =>
+    .command('$0 [promptWords...] ', 'Launch Gemini CLI', (yargsInstance) =>
       yargsInstance
         .option('model', {
           alias: 'm',
@@ -311,6 +314,8 @@ export async function parseArguments(settings: Settings): Promise<CliArgs> {
   }
 
   yargsInstance.command(agentsCommand);
+  yargsInstance.command(codeCommand);
+  yargsInstance.command(generateCommand);
 
   yargsInstance
     .version(await getCliVersion()) // This will enable the --version flag based on package.json
@@ -329,7 +334,10 @@ export async function parseArguments(settings: Settings): Promise<CliArgs> {
     result._.length > 0 &&
     (result._[0] === 'mcp' ||
       result._[0] === 'extensions' ||
-      result._[0] === 'agents')
+      result._[0] === 'agents' ||
+      result._[0] === 'code' ||
+      result._[0] === 'voice' ||
+      result._[0] === 'generate')
   ) {
     // MCP commands handle their own execution and process exit
     process.exit(0);
@@ -629,6 +637,8 @@ export async function loadCliConfig(
     enablePromptCompletion: settings.general?.enablePromptCompletion ?? false,
     eventEmitter: appEvents,
     useSmartEdit: argv.useSmartEdit ?? settings.useSmartEdit,
+    allowCodeExecution: settings.security?.allowCodeExecution,
+    alwaysReview: settings.security?.alwaysReview,
   });
 }
 

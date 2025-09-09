@@ -243,6 +243,14 @@ Settings are organized into categories. All settings should be placed within the
   - **Description:** Setting to track whether Folder trust is enabled.
   - **Default:** `false`
 
+- **`security.allowCodeExecution`** (boolean):
+  - **Description:** Allows agents to read and write code on your machine without asking permission.
+  - **Default:** `false`
+
+- **`security.alwaysReview`** (array of strings):
+  - **Description:** A list of commands that you always want to review before executing, even when in YOLO mode.
+  - **Default:** `[]`
+
 - **`security.auth.selectedType`** (string):
   - **Description:** The currently selected authentication type.
   - **Default:** `undefined`

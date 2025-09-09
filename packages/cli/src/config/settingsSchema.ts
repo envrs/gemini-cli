@@ -733,6 +733,26 @@ export const SETTINGS_SCHEMA = {
           },
         },
       },
+      allowCodeExecution: {
+        type: 'boolean',
+        label: 'Allow Code Execution',
+        category: 'Security',
+        requiresRestart: false,
+        default: false,
+        description:
+          'Allows agents to read and write code on your machine without asking permission.',
+        showInDialog: true,
+      },
+      alwaysReview: {
+        type: 'array',
+        label: 'Always Review',
+        category: 'Security',
+        requiresRestart: false,
+        default: [] as string[],
+        description:
+          'A list of commands that you always want to review before executing, even when in YOLO mode.',
+        showInDialog: false,
+      },
       auth: {
         type: 'object',
         label: 'Authentication',

@@ -5,7 +5,7 @@
  */
 
 import type { CommandModule } from 'yargs';
-import { loadAgents, saveAgents, type Agent } from '@google/gemini-cli-core';
+import { loadAgents, saveAgents, Agent } from '@google/gemini-cli-core';
 
 export const addCommand: CommandModule = {
   command: 'add <name> <model> [temperature]',
@@ -24,11 +24,11 @@ export const addCommand: CommandModule = {
       }),
   handler: (argv) => {
     const agents = loadAgents();
-    const newAgent: Agent = {
-      name: argv['name'] as string,
-      model: argv['model'] as string,
-      temperature: argv['temperature'] as number,
-    };
+    const newAgent = new Agent(
+      argv['name'] as string,
+      argv['model'] as string,
+      argv['temperature'] as number,
+    );
     agents.push(newAgent);
     saveAgents(agents);
     console.log(`Agent "${argv['name']}" added successfully.`);

@@ -49,6 +49,7 @@ class ShellToolInvocation extends BaseToolInvocation<
     private readonly config: Config,
     params: ShellToolParams,
     private readonly allowlist: Set<string>,
+    private readonly alwaysReview: string[],
   ) {
     super(params);
   }
@@ -72,6 +73,26 @@ class ShellToolInvocation extends BaseToolInvocation<
   ): Promise<ToolCallConfirmationDetails | false> {
     const command = stripShellWrapper(this.params.command);
     const rootCommands = [...new Set(getCommandRoots(command))];
+
+    const alwaysReviewCommands = rootCommands.filter((command) =>
+      this.alwaysReview.includes(command),
+    );
+
+    if (alwaysReviewCommands.length > 0) {
+      const confirmationDetails: ToolExecuteConfirmationDetails = {
+        type: 'exec',
+        title: 'Confirm Shell Command',
+        command: this.params.command,
+        rootCommand: alwaysReviewCommands.join(', '),
+        onConfirm: async (outcome: ToolConfirmationOutcome) => {
+          if (outcome === ToolConfirmationOutcome.ProceedAlways) {
+            // This command is always reviewed, so we don't add it to the allowlist.
+          }
+        },
+      };
+      return confirmationDetails;
+    }
+
     const commandsToConfirm = rootCommands.filter(
       (command) => !this.allowlist.has(command),
     );
@@ -336,7 +357,10 @@ export class ShellTool extends BaseDeclarativeTool<
   static Name: string = 'run_shell_command';
   private allowlist: Set<string> = new Set();
 
-  constructor(private readonly config: Config) {
+  constructor(
+    private readonly config: Config,
+    private readonly alwaysReview: string[] = [],
+  ) {
     super(
       ShellTool.Name,
       'Shell',
@@ -409,6 +433,11 @@ export class ShellTool extends BaseDeclarativeTool<
   protected createInvocation(
     params: ShellToolParams,
   ): ToolInvocation<ShellToolParams, ToolResult> {
-    return new ShellToolInvocation(this.config, params, this.allowlist);
+    return new ShellToolInvocation(
+      this.config,
+      params,
+      this.allowlist,
+      this.alwaysReview,
+    );
   }
 }

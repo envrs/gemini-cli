@@ -6,7 +6,7 @@
 
 import { NotificationManager } from './notificationManager.js';
 import type { SubagentTerminateMode } from './subagent.js';
-import { SubAgentScope } from './subagent.js';
+import { SubAgentScope, ContextState } from './subagent.js'; // Added ContextState import
 import { loadAgents } from '../config/agents.js';
 import type { Config } from '../config/config.js';
 
@@ -17,10 +17,11 @@ export interface AgentStatus {
   terminateReason?: SubagentTerminateMode;
 }
 
-export interface AgentHistory {
-  message: string;
-  timestamp: number;
-}
+import {
+  loadAgentHistory,
+  saveAgentHistory,
+  type AgentHistory,
+} from '../agents/history.js';
 
 export class AgentTracker {
   private static instance: AgentTracker;
@@ -52,6 +53,9 @@ export class AgentTracker {
     }
 
     const agentId = `${agentName}-${Date.now()}`;
+    const history = loadAgentHistory(agentId);
+    this.agentHistory.set(agentId, history);
+
     const abortController = new AbortController();
     const subagent = await SubAgentScope.create(
       agentName,
@@ -86,12 +90,14 @@ export class AgentTracker {
           status.status = 'COMPLETED';
           status.terminateReason = subagent.output.terminate_reason;
         }
+        this.saveHistory(agentId);
       })
       .catch(() => {
         const status = this.agentStatus.get(agentId);
         if (status) {
           status.status = 'ERROR';
         }
+        this.saveHistory(agentId);
       });
 
     return agentId;
@@ -113,6 +119,7 @@ export class AgentTracker {
       if (status) {
         status.status = 'STOPPED';
       }
+      this.saveHistory(agentId);
     }
   }
 
@@ -128,5 +135,12 @@ export class AgentTracker {
       message,
       timestamp: Date.now(),
     });
+  }
+
+  private saveHistory(agentId: string) {
+    const history = this.agentHistory.get(agentId);
+    if (history) {
+      saveAgentHistory(agentId, history);
+    }
   }
 }

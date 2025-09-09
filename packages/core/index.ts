@@ -24,3 +24,5 @@ export * from './src/core/agentTracker.js';
 export * from './src/config/agents.js';
 export * from './src/core/notificationManager.js';
 export * from './src/core/subagent.js';
+export * from './src/agents/autonomous.js';
+export * from './src/agents/background-agent.js';

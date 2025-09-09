@@ -212,6 +212,8 @@ export interface ConfigParameters {
   enablePromptCompletion?: boolean;
   eventEmitter?: EventEmitter;
   useSmartEdit?: boolean;
+  allowCodeExecution?: boolean;
+  alwaysReview?: string[];
 }
 
 export class Config {
@@ -289,6 +291,8 @@ export class Config {
   private readonly fileExclusions: FileExclusions;
   private readonly eventEmitter?: EventEmitter;
   private readonly useSmartEdit: boolean;
+  private readonly allowCodeExecution: boolean;
+  private readonly alwaysReview: string[];
 
   constructor(params: ConfigParameters) {
     this.sessionId = params.sessionId;
@@ -365,6 +369,8 @@ export class Config {
     this.enablePromptCompletion = params.enablePromptCompletion ?? false;
     this.fileExclusions = new FileExclusions(this);
     this.eventEmitter = params.eventEmitter;
+    this.allowCodeExecution = params.allowCodeExecution ?? false;
+    this.alwaysReview = params.alwaysReview ?? [];
 
     if (params.contextFileName) {
       setGeminiMdFilename(params.contextFileName);
@@ -372,6 +378,10 @@ export class Config {
 
     if (this.telemetrySettings.enabled) {
       initializeTelemetry(this);
+    }
+
+    if (this.allowCodeExecution) {
+      this.approvalMode = ApprovalMode.YOLO;
     }
   }
 
@@ -834,6 +844,14 @@ export class Config {
     return this.fileExclusions;
   }
 
+  getAllowCodeExecution(): boolean {
+    return this.allowCodeExecution;
+  }
+
+  getAlwaysReview(): string[] {
+    return this.alwaysReview;
+  }
+
   async createToolRegistry(): Promise<ToolRegistry> {
     const registry = new ToolRegistry(this, this.eventEmitter);
 
@@ -889,7 +907,7 @@ export class Config {
     registerCoreTool(WriteFileTool, this);
     registerCoreTool(WebFetchTool, this);
     registerCoreTool(ReadManyFilesTool, this);
-    registerCoreTool(ShellTool, this);
+    registerCoreTool(ShellTool, this, this.alwaysReview);
     registerCoreTool(MemoryTool);
     registerCoreTool(WebSearchTool, this);
 
